@@ -7,7 +7,7 @@ import yahooquery as yq
 
 TBL_ROW   = 2
 TBL_COL   = 3
-TBL_WIDTH = 9
+TBL_WIDTH = 13
 
 if len(sys.argv) < 4:
   print("You can supply the table position and width as")
@@ -64,23 +64,43 @@ for i, stock in enumerate(stocks):
   bals = ticker.balance_sheet(trailing=True).iloc[-1] # Latest report
   price_equity = info2["marketCap"] / bals["StockholdersEquity"]
 
-  print(f"Reference date: {bals['asOfDate']}")
+  print(f"Reference date: {info1['regularMarketTime']}")
+
+  try:
+    fte = info3["fullTimeEmployees"]
+  except: 
+    fte = "N/A"
 
   # Add to worksheet
   ws.range(r_st, r_ed).value = [
-    info1["longName"],                   # Nome
-    info3["sector"],                     # Segmento
-    info2["currency"],                   # Moeda
-    info1["regularMarketPrice"],         # Preco
-    info2["trailingPE"],                 # P/E
-    price_equity,                        # Price / Equity
-    info2["fiftyTwoWeekLow"],            # Min. YTD
-    info2["fiftyTwoWeekHigh"],           # Max. YTD
-    info2["trailingAnnualDividendYield"] # DY (%)
+    info1["longName"],                    # Nome
+    info3["sector"],                      # Segmento
+    fte,                                  # Funcionários
+    info2["currency"],                    # Moeda
+    info1["regularMarketPrice"],          # Preco
+    info2["forwardPE"],                   # P/E
+    price_equity,                         # Price / Equity
+    info2["fiftyTwoWeekLow"],             # Min. YTD
+    info2["fiftyTwoWeekHigh"],            # Max. YTD
+    info2["trailingAnnualDividendYield"], # DY (%)
+    info2["marketCap"],                   # Market Cap
+    info1['regularMarketTime']            # Data
   ]
   
   # Set formatting
-  ws.range(r_st, (i + TBL_ROW, TBL_COL + r_ed[1] - 1)).number_format = "0,00"
-  ws.range(r_ed).number_format = "0,00%"
+  # ws.range(r_st, (i + TBL_ROW, TBL_COL)).number_format = [
+  #   "",                # Nome
+  #   "",                # Segmento
+  #   "",                # Funcionários
+  #   "",                # Moeda
+  #   "0.00",            # Preço
+  #   "0.00",            # P/E
+  #   "0.00",            # Price / Equity
+  #   "0.00",            # Min. YTD
+  #   "0.00",            # Máx. YTD
+  #   "0.00%",           # DY (TTM)
+  #   "0",               # Market Cap
+  #   "dd/mm/yyyy hh:mm" # Data
+  # ]
 
   i += 1
